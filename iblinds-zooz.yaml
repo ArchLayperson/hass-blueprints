@@ -15,9 +15,10 @@ blueprint:
         name: iBlinds v3 motors
         selector:
           target:
-            integration: zwavejs
-            manufacturer: Zooz
-            model: "Z-Wave Plus 700 Series Remote Switch"
+            device:
+              integration: zwavejs
+              manufacturer: Zooz
+              model: "Z-Wave Plus 700 Series Remote Switch"
       on_tilt:
         name: "Tilt to set for \"on\""
         selector:
