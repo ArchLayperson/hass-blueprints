@@ -7,7 +7,7 @@ blueprint:
         name: Zooz Remote Switch
         selector:
           device:
-            integration: "zwavejs"
+            #integration: "zwavejs"
             manufacturer: "Zooz"
             model: "ZEN34"
 
@@ -16,13 +16,45 @@ blueprint:
         selector:
           target:
             device:
-              integration: zwavejs
+              integration: zwave_js
               manufacturer: "HAB Home Intelligence LLC"
-              model: "iblinds v3"
-      on_tilt:
-        name: "Tilt to set for \"on\""
-        selector:
-          number:
-            min: 1
-            max: 99
-            mode: slider
+              model: "iblinds V3"
+            entity:
+              integration: zwave_js
+              device_class: window
+
+trigger:
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: !input controller
+      command_class_name: "Central Scene"
+
+action:
+  - service: zwave_js.set_value
+    target: !input devices
+    data:
+      command_class: '38' # Multilevel Switch
+      endpoint: '0'
+      property: >
+        {% if trigger.event.data.value == "KeyPressed" %}
+          targetValue
+        {% elif trigger.event.data.value == "KeyHeldDown" or trigger.event.data.value == "KeyReleased" %}
+          {% if trigger.event.data.property_key == "001" %}
+            Up
+          {% elif trigger.event.data.property_key == "002" %}
+            Down
+          {% endif %}
+        {% endif %}
+      value: >
+        {% if trigger.event.data.value == "KeyPressed" %}
+          {% if trigger.event.data.property_key == "001" %}
+            50
+          {% elif trigger.event.data.property_key == "002" %}
+            0
+          {% endif %}
+        {% elif trigger.event.data.value == "KeyHeldDown" %}
+          1
+        {% elif trigger.event.data.value == "KeyReleased" %}
+          0
+        {% endif %}
